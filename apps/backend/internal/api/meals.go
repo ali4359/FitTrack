@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/ali4359/iron-and-spice/backend/internal/models"
+	"github.com/ali4359/fittrack/backend/internal/models"
 )
 
 // handleSuggestMeals reads goal/region/budget/restrictions from the saved profile

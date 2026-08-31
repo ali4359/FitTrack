@@ -3,7 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@iron-and-spice/shared": [
+      "@fittrack/shared": [
         "../../packages/shared/src/index.ts"
       ]
     }

@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
-import type { User } from '@iron-and-spice/shared';
+import type { User } from '@fittrack/shared';
 
-const TOKEN_KEY = 'ironandspice.jwt';
-const USER_KEY = 'ironandspice.user';
+const TOKEN_KEY = 'fittrack.jwt';
+const USER_KEY = 'fittrack.user';
 
 type AuthState = {
   token: string | null;

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { CompleteWorkoutRequest } from '@iron-and-spice/shared';
+import type { CompleteWorkoutRequest } from '@fittrack/shared';
 import { completeWorkout, getWorkoutDay, getWorkoutHistory } from '../api/endpoints';
 import { queryClient, queryKeys } from '../api/queryClient';
 

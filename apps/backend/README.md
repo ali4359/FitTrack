@@ -1,4 +1,4 @@
-# Iron & Spice — Backend (stub)
+# FitTrack — Backend (stub)
 
 > **Note:** This is a minimal Gin + GORM stub scaffolded to give the mobile app a
 > working API to build against. Replace it with the real Go backend when ready —
@@ -12,14 +12,14 @@ go run ./cmd/api
 
 # or against Postgres
 docker compose up -d
-DATABASE_URL='postgres://postgres:postgres@localhost:5432/ironandspice?sslmode=disable' go run ./cmd/api
+DATABASE_URL='postgres://postgres:postgres@localhost:5432/fittrack?sslmode=disable' go run ./cmd/api
 ```
 
 Server listens on `:8080` (override with `PORT`).
 
 ## Demo credentials
 
-`demo@ironandspice.app` / `password123` (goal: bulk, region: Lahore, budget: mid, halal)
+`demo@fittrack.app` / `password123` (goal: bulk, region: Lahore, budget: mid, halal)
 
 ## Endpoints
 

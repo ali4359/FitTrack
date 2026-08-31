@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { LogMealRequest, MealSuggestionType } from '@iron-and-spice/shared';
+import type { LogMealRequest, MealSuggestionType } from '@fittrack/shared';
 import { logMeal, suggestMeals } from '../api/endpoints';
 import { queryKeys } from '../api/queryClient';
 

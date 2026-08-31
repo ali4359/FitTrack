@@ -13,7 +13,7 @@ import type {
   User,
   WorkoutDay,
   WorkoutHistoryResponse,
-} from '@iron-and-spice/shared';
+} from '@fittrack/shared';
 import { api } from './client';
 
 // ---- Auth ----

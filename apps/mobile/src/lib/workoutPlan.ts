@@ -1,4 +1,4 @@
-import type { WorkoutLog } from '@iron-and-spice/shared';
+import type { WorkoutLog } from '@fittrack/shared';
 
 /** The seeded rotating split. Replace when the backend serves a real plan. */
 export const PLAN_DAYS = ['day-1', 'day-2', 'day-3'] as const;

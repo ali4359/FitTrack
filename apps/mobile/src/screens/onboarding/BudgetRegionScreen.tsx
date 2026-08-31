@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { BudgetTier } from '@iron-and-spice/shared';
+import type { BudgetTier } from '@fittrack/shared';
 import { AppText, Button, Field, OptionCard, Screen } from '../../components';
 import { spacing } from '../../theme';
 import { useOnboardingStore } from '../../store/onboardingStore';

@@ -11,20 +11,20 @@ const apiBaseUrl =
   'http://localhost:8080';
 
 const config: ExpoConfig = {
-  name: 'Iron & Spice',
-  slug: 'iron-and-spice',
+  name: 'FitTrack',
+  slug: 'fittrack',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
-  scheme: 'ironandspice',
+  scheme: 'fittrack',
   userInterfaceStyle: 'dark',
   backgroundColor: '#17181B',
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'app.ironandspice.mobile',
+    bundleIdentifier: 'app.fittrack.mobile',
   },
   android: {
-    package: 'app.ironandspice.mobile',
+    package: 'app.fittrack.mobile',
     adaptiveIcon: {
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundColor: '#17181B',

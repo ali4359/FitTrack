@@ -21,7 +21,7 @@ export function LoginScreen({ navigation }: Props) {
   return (
     <Screen scroll contentStyle={{ flexGrow: 1, justifyContent: 'center' }}>
       <View style={{ gap: spacing.xs, marginBottom: spacing.lg }}>
-        <AppText variant="display">IRON &amp; SPICE</AppText>
+        <AppText variant="display">FITTRACK</AppText>
         <AppText variant="subtitle">Train hard. Eat right. Locally.</AppText>
       </View>
 

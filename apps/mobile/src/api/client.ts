@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
-import type { ApiError } from '@iron-and-spice/shared';
+import type { ApiError } from '@fittrack/shared';
 import { API_URL } from '../config';
 import { forceSignOut, getToken } from '../store/authStore';
 

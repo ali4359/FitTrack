@@ -1,4 +1,4 @@
-# Iron & Spice
+# FitTrack
 
 Gym + regional nutrition app for the Pakistani / South Asian market. Closes the
 loop between training and eating: finish a workout → get a MET-based calorie
@@ -7,7 +7,7 @@ estimate → get a region- and budget-aware meal suggestion for your goal.
 ## Monorepo layout
 
 ```
-iron-and-spice/
+fittrack/
 ├── apps/
 │   ├── mobile/     React Native (Expo) app  ← the frontend
 │   └── backend/    Go API (Gin + GORM)      ← standalone Go module
@@ -42,11 +42,11 @@ Or against Postgres:
 ```bash
 cd apps/backend
 docker compose up -d
-DATABASE_URL='postgres://postgres:postgres@localhost:5432/ironandspice?sslmode=disable' \
+DATABASE_URL='postgres://postgres:postgres@localhost:5432/fittrack?sslmode=disable' \
   go run ./cmd/api
 ```
 
-API listens on `http://localhost:8080`. Demo login: `demo@ironandspice.app` / `password123`.
+API listens on `http://localhost:8080`. Demo login: `demo@fittrack.app` / `password123`.
 See [apps/backend/README.md](apps/backend/README.md) for the full endpoint list.
 
 > The backend here is a **stub** scaffolded so the mobile app has something to

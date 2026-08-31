@@ -1,4 +1,4 @@
-module github.com/ali4359/iron-and-spice/backend
+module github.com/ali4359/fittrack/backend
 
 go 1.26
 

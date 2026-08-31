@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { WorkoutExerciseResult } from '@iron-and-spice/shared';
+import type { WorkoutExerciseResult } from '@fittrack/shared';
 import { AppText, Button, Card, Screen, Tag } from '../../components';
 import { apiErrorMessage } from '../../api/client';
 import { useCompleteWorkout, useWorkoutDay } from '../../hooks/useWorkouts';

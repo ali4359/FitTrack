@@ -1,13 +1,13 @@
 {
-  "name": "iron-and-spice",
+  "name": "fittrack",
   "version": "0.1.0",
   "private": true,
-  "description": "Iron & Spice — gym + regional nutrition app (monorepo: Go backend + Expo mobile)",
+  "description": "FitTrack — gym + regional nutrition app (monorepo: Go backend + Expo mobile)",
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "mobile": "pnpm --filter mobile start",
-    "shared:build": "pnpm --filter @iron-and-spice/shared build",
-    "shared:check": "pnpm --filter @iron-and-spice/shared typecheck",
+    "shared:build": "pnpm --filter @fittrack/shared build",
+    "shared:check": "pnpm --filter @fittrack/shared typecheck",
     "backend": "cd apps/backend && go run ./cmd/api"
   },
   "engines": {

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/ali4359/iron-and-spice/backend/internal/models"
+	"github.com/ali4359/fittrack/backend/internal/models"
 )
 
 // Open connects to Postgres when DATABASE_URL is set, otherwise falls back to a
@@ -29,7 +29,7 @@ func Open() *gorm.DB {
 	} else {
 		path := os.Getenv("SQLITE_PATH")
 		if path == "" {
-			path = "iron-and-spice.db"
+			path = "fittrack.db"
 		}
 		db, err = gorm.Open(sqlite.Open(path), cfg)
 		log.Printf("store: using sqlite (%s)", path)
@@ -112,7 +112,7 @@ func seed(db *gorm.DB) {
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	demo := models.User{
-		ID: uuid.NewString(), Email: "demo@ironandspice.app", Name: "Demo Lifter",
+		ID: uuid.NewString(), Email: "demo@fittrack.app", Name: "Demo Lifter",
 		PasswordHash: string(hash), Goal: "bulk", WeightKg: 78, HeightCm: 176,
 		Region: "Lahore", BudgetTier: "mid", Restrictions: "halal",
 	}

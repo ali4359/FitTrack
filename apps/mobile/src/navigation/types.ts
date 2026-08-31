@@ -1,5 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
-import type { MealSuggestionType } from '@iron-and-spice/shared';
+import type { MealSuggestionType } from '@fittrack/shared';
 
 export type AuthStackParamList = {
   Login: undefined;

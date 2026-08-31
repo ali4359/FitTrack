@@ -1,5 +1,5 @@
 /**
- * Iron & Spice palette — from the approved mockup. Dark UI only.
+ * FitTrack palette — from the approved mockup. Dark UI only.
  * Do not introduce new colors without updating the mockup.
  */
 export const colors = {

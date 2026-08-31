@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ali4359/iron-and-spice/backend/internal/models"
+	"github.com/ali4359/fittrack/backend/internal/models"
 )
 
 func (s *Server) handleProgressSummary(c *gin.Context) {

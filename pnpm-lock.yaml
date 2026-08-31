@@ -19,7 +19,7 @@ importers:
       '@expo-google-fonts/oswald':
         specifier: ^0.4.2
         version: 0.4.2
-      '@iron-and-spice/shared':
+      '@fittrack/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@react-native-async-storage/async-storage':

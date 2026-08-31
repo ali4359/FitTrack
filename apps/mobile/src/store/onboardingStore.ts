@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { BudgetTier, Goal } from '@iron-and-spice/shared';
+import type { BudgetTier, Goal } from '@fittrack/shared';
 
 type OnboardingDraft = {
   goal: Goal | null;

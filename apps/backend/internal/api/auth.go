@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/ali4359/iron-and-spice/backend/internal/models"
+	"github.com/ali4359/fittrack/backend/internal/models"
 )
 
 const userCtxKey = "userID"

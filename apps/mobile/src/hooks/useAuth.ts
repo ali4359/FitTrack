@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { LoginRequest, RegisterRequest, UpdateProfileRequest } from '@iron-and-spice/shared';
+import type { LoginRequest, RegisterRequest, UpdateProfileRequest } from '@fittrack/shared';
 import { login, register, updateProfile } from '../api/endpoints';
 import { queryClient, queryKeys } from '../api/queryClient';
 import { useAuthStore } from '../store/authStore';
