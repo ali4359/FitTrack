@@ -1,0 +1,57 @@
+# ---- Dependencies ----
+node_modules/
+.pnp
+.pnp.js
+
+# ---- Build output ----
+dist/
+build/
+web-build/
+*.tsbuildinfo
+apps/backend/bin/
+apps/backend/fittrack
+apps/backend/*.test
+
+# ---- Expo / React Native (apps/mobile) ----
+.expo/
+.expo-shared/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+.metro-health-check*
+
+# ---- Go (apps/backend) ----
+vendor/
+*.exe
+*.out
+coverage.out
+go.work.sum
+
+# ---- Environment ----
+.env
+.env.*
+!.env.example
+apps/mobile/.env
+apps/backend/.env
+
+# ---- Databases ----
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- Logs ----
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# ---- Editor / OS ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
