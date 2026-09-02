@@ -44,6 +44,8 @@ func Open() *gorm.DB {
 		&models.WorkoutDay{},
 		&models.WorkoutDayExercise{},
 		&models.WorkoutLog{},
+		&models.WorkoutExerciseLog{},
+		&models.WorkoutSetLog{},
 		&models.MealEntry{},
 		&models.MealLog{},
 	); err != nil {
@@ -113,7 +115,8 @@ func seed(db *gorm.DB) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	demo := models.User{
 		ID: uuid.NewString(), Email: "demo@fittrack.app", Name: "Demo Lifter",
-		PasswordHash: string(hash), Goal: "bulk", WeightKg: 78, HeightCm: 176,
+		PasswordHash: string(hash), Goal: "bulk", Sex: "male", Age: 27,
+		WeightKg: 78, HeightCm: 176,
 		Region: "Lahore", BudgetTier: "mid", Restrictions: "halal",
 	}
 	db.Create(&demo)

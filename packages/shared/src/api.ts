@@ -47,11 +47,16 @@ export type UpdateProfileRequest = Partial<{
 
 // ---- Workouts ----
 
+/** One set the user logged for an exercise. */
+export type WorkoutSetInput = {
+  reps: number;
+  weightKg: number;
+};
+
 export type WorkoutExerciseResult = {
   exerciseId: string;
-  setsDone: number;
-  repsDone: number;
-  weightKg: number;
+  /** in performed order; empty means the exercise was skipped */
+  sets: WorkoutSetInput[];
 };
 
 export type CompleteWorkoutRequest = {

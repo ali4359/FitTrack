@@ -127,9 +127,16 @@ func MealTarget(p Profile, remaining Macros, mealsLeft int, isPostWorkout bool) 
 		share = math.Min(400, 0.2*daily)
 	}
 
-	protein := remaining.ProteinG / float64(mealsLeft)
-	carbs := remaining.CarbsG / float64(mealsLeft)
-	fat := remaining.FatG / float64(mealsLeft)
+	// Scale the macros to the same fraction of what's left as the calorie share,
+	// so the meal's macros stay consistent with its calorie budget even when the
+	// share was clamped (e.g. one meal left, nothing eaten yet).
+	frac := 1.0 / float64(mealsLeft)
+	if remaining.Calories > 0 {
+		frac = share / remaining.Calories
+	}
+	protein := remaining.ProteinG * frac
+	carbs := remaining.CarbsG * frac
+	fat := remaining.FatG * frac
 
 	if isPostWorkout {
 		protein = math.Max(protein, 0.4*p.weight())

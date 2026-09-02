@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 
 	"github.com/ali4359/fittrack/backend/internal/models"
 )
@@ -38,10 +39,11 @@ type completeWorkoutBody struct {
 	WorkoutDayID    string `json:"workoutDayId" binding:"required"`
 	DurationMinutes int    `json:"durationMinutes" binding:"required"`
 	Exercises       []struct {
-		ExerciseID string  `json:"exerciseId"`
-		SetsDone   int     `json:"setsDone"`
-		RepsDone   int     `json:"repsDone"`
-		WeightKg   float64 `json:"weightKg"`
+		ExerciseID string `json:"exerciseId"`
+		Sets       []struct {
+			Reps     int     `json:"reps"`
+			WeightKg float64 `json:"weightKg"`
+		} `json:"sets"`
 	} `json:"exercises"`
 }
 
@@ -72,15 +74,38 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 		return
 	}
 
+	logID := uuid.NewString()
+
 	mets := []float64{}
-	for _, e := range body.Exercises {
-		if e.SetsDone == 0 {
+	exerciseLogs := []models.WorkoutExerciseLog{}
+	for i, e := range body.Exercises {
+		sets := []models.WorkoutSetLog{}
+		for _, st := range e.Sets {
+			if st.Reps <= 0 {
+				continue
+			}
+			sets = append(sets, models.WorkoutSetLog{
+				ID:        uuid.NewString(),
+				SetNumber: len(sets) + 1,
+				Reps:      st.Reps,
+				WeightKg:  st.WeightKg,
+			})
+		}
+		if len(sets) == 0 {
 			continue
 		}
+
 		var ex models.Exercise
 		if s.db.First(&ex, "id = ?", e.ExerciseID).Error == nil {
 			mets = append(mets, ex.MetValue)
 		}
+		exerciseLogs = append(exerciseLogs, models.WorkoutExerciseLog{
+			ID:           uuid.NewString(),
+			WorkoutLogID: logID,
+			ExerciseID:   e.ExerciseID,
+			Position:     i,
+			Sets:         sets,
+		})
 	}
 
 	weight := user.WeightKg
@@ -90,12 +115,13 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 	calories := estimateCalories(weight, body.DurationMinutes, mets)
 
 	logEntry := models.WorkoutLog{
-		ID:              uuid.NewString(),
+		ID:              logID,
 		UserID:          user.ID,
 		WorkoutDayID:    body.WorkoutDayID,
 		CompletedAt:     time.Now(),
 		DurationMinutes: body.DurationMinutes,
 		CaloriesBurned:  calories,
+		Exercises:       exerciseLogs,
 	}
 	if err := s.db.Create(&logEntry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not save workout"})
@@ -115,6 +141,8 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 func (s *Server) handleWorkoutHistory(c *gin.Context) {
 	var logs []models.WorkoutLog
 	s.db.
+		Preload("Exercises", func(db *gorm.DB) *gorm.DB { return db.Order("position asc") }).
+		Preload("Exercises.Sets", func(db *gorm.DB) *gorm.DB { return db.Order("set_number asc") }).
 		Where("user_id = ?", currentUserID(c)).
 		Order("completed_at desc").
 		Limit(30).

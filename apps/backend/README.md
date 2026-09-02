@@ -17,6 +17,19 @@ DATABASE_URL='postgres://postgres:postgres@localhost:5432/fittrack?sslmode=disab
 
 Server listens on `:8080` (override with `PORT`).
 
+### Meal suggestions (LLM)
+
+`GET /api/meals/suggest` computes a per-meal calorie/macro target from the
+profile, today's workout burn, and what's been logged today, then asks Claude for
+Pakistani dishes that fill the gap. Every candidate is run through code
+guardrails (Atwater macro sanity, dietary rule + allergen scan, calorie ceiling,
+diversity) before it is returned, and results are cached per profile bucket.
+
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | – | when unset, the endpoint falls back to the seeded `MealEntry` catalogue |
+| `MEALS_LLM_MODEL` | `claude-haiku-4-5` | override the model |
+
 ## Demo credentials
 
 `demo@fittrack.app` / `password123` (goal: bulk, region: Lahore, budget: mid, halal)
@@ -32,8 +45,8 @@ Server listens on `:8080` (override with `PORT`).
 | GET | `/api/workouts/:dayId` | ✓ | `WorkoutDay` with nested exercises |
 | POST | `/api/workouts/complete` | ✓ | → `{ workoutLog, nextStep }` |
 | GET | `/api/workouts/history` | ✓ | `{ results: WorkoutLog[] }` (last 30) |
-| GET | `/api/meals/suggest?type=post-workout` | ✓ | `{ results: MealEntry[] }` — profile-aware |
-| POST | `/api/meals/log` | ✓ | `{ mealEntryId, mealType }` |
+| GET | `/api/meals/suggest?type=post-workout&exclude=Nihari,Daal` | ✓ | `{ target, dailyTarget, results: MealSuggestion[], source, broadened }` |
+| POST | `/api/meals/log` | ✓ | `{ mealType, servings?, mealEntryId? }` or an inline `{ dishName, calories, proteinG, carbsG, fatG }` |
 | GET | `/api/progress/summary` | ✓ | `{ workoutsThisMonth, avgCaloriesBurned }` |
 
 Calorie burn is a MET-based estimate: `kcal = avgMET * 3.5 * weightKg / 200 * minutes`.

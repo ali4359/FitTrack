@@ -10,17 +10,16 @@ import type { HomeStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
-type ExerciseState = {
-  setsDone: number;
-  repsDone: string;
-  weightKg: string;
-};
+type SetEntry = { reps: string; weightKg: string };
+type ExerciseState = { sets: SetEntry[] };
 
 function fmtClock(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+
+const isLogged = (set: SetEntry) => (Number(set.reps) || 0) > 0;
 
 export function WorkoutSessionScreen({ navigation, route }: Props) {
   const { workoutDayId } = route.params;
@@ -36,7 +35,7 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
 
   const [state, setState] = useState<Record<string, ExerciseState>>({});
 
-  // seed per-exercise state once the plan loads
+  // seed one row per planned set once the plan loads
   useEffect(() => {
     if (!day.data) return;
     setState((prev) => {
@@ -44,9 +43,10 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
       const seeded: Record<string, ExerciseState> = {};
       for (const row of day.data.exercises) {
         seeded[row.exercise.id] = {
-          setsDone: 0,
-          repsDone: String(row.defaultReps),
-          weightKg: '',
+          sets: Array.from({ length: Math.max(1, row.defaultSets) }, () => ({
+            reps: String(row.defaultReps),
+            weightKg: '',
+          })),
         };
       }
       return seeded;
@@ -65,24 +65,30 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
   }, [navigation, day.data?.name, elapsed]);
 
   const touched = useMemo(
-    () => Object.values(state).filter((s) => s.setsDone > 0).length,
+    () => Object.values(state).filter((s) => s.sets.some(isLogged)).length,
     [state],
   );
 
-  const patch = (id: string, p: Partial<ExerciseState>) =>
-    setState((prev) => ({ ...prev, [id]: { ...prev[id], ...p } }));
+  const setSets = (id: string, next: (sets: SetEntry[]) => SetEntry[]) =>
+    setState((prev) => ({ ...prev, [id]: { sets: next(prev[id]?.sets ?? []) } }));
+
+  const patchSet = (id: string, index: number, p: Partial<SetEntry>) =>
+    setSets(id, (sets) => sets.map((s, i) => (i === index ? { ...s, ...p } : s)));
+
+  const addSet = (id: string) =>
+    setSets(id, (sets) => [...sets, { reps: sets.at(-1)?.reps ?? '', weightKg: sets.at(-1)?.weightKg ?? '' }]);
+
+  const removeSet = (id: string, index: number) =>
+    setSets(id, (sets) => sets.filter((_, i) => i !== index));
 
   const finish = () => {
     if (!day.data) return;
-    const exercises: WorkoutExerciseResult[] = day.data.exercises.map((row) => {
-      const s = state[row.exercise.id];
-      return {
-        exerciseId: row.exercise.id,
-        setsDone: s?.setsDone ?? 0,
-        repsDone: Number(s?.repsDone) || 0,
-        weightKg: Number(s?.weightKg) || 0,
-      };
-    });
+    const exercises: WorkoutExerciseResult[] = day.data.exercises.map((row) => ({
+      exerciseId: row.exercise.id,
+      sets: (state[row.exercise.id]?.sets ?? [])
+        .filter(isLogged)
+        .map((s) => ({ reps: Number(s.reps) || 0, weightKg: Number(s.weightKg) || 0 })),
+    }));
     const durationMinutes = Math.max(1, Math.round(elapsed / 60));
 
     complete.mutate(
@@ -153,8 +159,9 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
       }
     >
       {day.data.exercises.map((row) => {
-        const s = state[row.exercise.id] ?? { setsDone: 0, repsDone: '', weightKg: '' };
-        const complete_ = s.setsDone >= row.defaultSets;
+        const sets = state[row.exercise.id]?.sets ?? [];
+        const loggedCount = sets.filter(isLogged).length;
+        const complete_ = loggedCount >= row.defaultSets;
         return (
           <Card key={row.exercise.id} style={{ gap: spacing.md }}>
             <View style={styles.exHeader}>
@@ -174,46 +181,59 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
               </View>
             </View>
 
-            <View>
-              <AppText variant="label" style={{ textTransform: 'uppercase', marginBottom: spacing.sm }}>
-                sets done
-              </AppText>
-              <View style={styles.setRow}>
-                {Array.from({ length: row.defaultSets }).map((_, i) => {
-                  const filled = i < s.setsDone;
-                  return (
-                    <Pressable
-                      key={i}
-                      onPress={() => patch(row.exercise.id, { setsDone: filled ? i : i + 1 })}
-                      style={[styles.setPill, filled && { backgroundColor: colors.turmeric, borderColor: colors.turmeric }]}
-                    >
-                      <AppText
-                        style={{
-                          fontFamily: fonts.monoBold,
-                          fontSize: fontSize.md,
-                          color: filled ? colors.onAccent : colors.textSecondary,
-                        }}
-                      >
-                        {i + 1}
-                      </AppText>
-                    </Pressable>
-                  );
-                })}
+            <View style={{ gap: spacing.sm }}>
+              <View style={styles.setHeaderRow}>
+                <AppText style={[styles.colSet, styles.colLabel]}>SET</AppText>
+                <AppText style={[styles.colNum, styles.colLabel]}>REPS</AppText>
+                <AppText style={[styles.colNum, styles.colLabel]}>WEIGHT (KG)</AppText>
+                <View style={styles.colRemove} />
               </View>
-            </View>
 
-            <View style={styles.inputsRow}>
-              <NumField
-                label="reps / set"
-                value={s.repsDone}
-                onChangeText={(t) => patch(row.exercise.id, { repsDone: t })}
-              />
-              <NumField
-                label="weight (kg)"
-                value={s.weightKg}
-                placeholder="0"
-                onChangeText={(t) => patch(row.exercise.id, { weightKg: t })}
-              />
+              {sets.map((set, i) => (
+                <View key={i} style={styles.setRow}>
+                  <AppText style={[styles.colSet, styles.setIndex, isLogged(set) && { color: colors.turmeric }]}>
+                    {i + 1}
+                  </AppText>
+                  <TextInput
+                    value={set.reps}
+                    onChangeText={(t) => patchSet(row.exercise.id, i, { reps: t.replace(/[^0-9]/g, '') })}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={colors.textSecondary}
+                    style={[styles.numInput, styles.colNum]}
+                  />
+                  <TextInput
+                    value={set.weightKg}
+                    onChangeText={(t) => patchSet(row.exercise.id, i, { weightKg: t.replace(/[^0-9.]/g, '') })}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={colors.textSecondary}
+                    style={[styles.numInput, styles.colNum]}
+                  />
+                  <Pressable
+                    onPress={() => removeSet(row.exercise.id, i)}
+                    disabled={sets.length === 1}
+                    hitSlop={8}
+                    style={styles.colRemove}
+                  >
+                    <AppText
+                      style={{
+                        fontFamily: fonts.monoBold,
+                        fontSize: fontSize.lg,
+                        color: sets.length === 1 ? colors.border : colors.textSecondary,
+                      }}
+                    >
+                      ✕
+                    </AppText>
+                  </Pressable>
+                </View>
+              ))}
+
+              <Pressable onPress={() => addSet(row.exercise.id)} hitSlop={8} style={styles.addSet}>
+                <AppText variant="label" color={colors.turmeric} style={{ textTransform: 'uppercase' }}>
+                  + Add set
+                </AppText>
+              </Pressable>
             </View>
           </Card>
         );
@@ -226,56 +246,31 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
   );
 }
 
-function NumField({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <View style={{ flex: 1, gap: spacing.sm }}>
-      <AppText variant="label" style={{ textTransform: 'uppercase' }}>
-        {label}
-      </AppText>
-      <TextInput
-        value={value}
-        onChangeText={(t) => onChangeText(t.replace(/[^0-9.]/g, ''))}
-        keyboardType="numeric"
-        placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
-        style={styles.numInput}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   exHeader: { flexDirection: 'row', gap: spacing.md },
-  setRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  setPill: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
+  setHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  setRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  colLabel: {
+    fontFamily: fonts.bodySemibold,
+    fontSize: fontSize.xs,
+    color: colors.textDim,
+    letterSpacing: 0.5,
   },
-  inputsRow: { flexDirection: 'row', gap: spacing.md },
+  colSet: { width: 28, textAlign: 'center' },
+  colNum: { flex: 1 },
+  colRemove: { width: 28, alignItems: 'center', justifyContent: 'center' },
+  setIndex: { fontFamily: fonts.monoBold, fontSize: fontSize.md, color: colors.textSecondary },
+  addSet: { paddingVertical: spacing.sm, alignSelf: 'flex-start' },
   numInput: {
     backgroundColor: colors.ink,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     color: colors.textLight,
     fontFamily: fonts.mono,
     fontSize: fontSize.lg,
+    textAlign: 'center',
   },
 });

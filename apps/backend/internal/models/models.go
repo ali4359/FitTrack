@@ -49,12 +49,32 @@ type WorkoutDayExercise struct {
 
 // WorkoutLog mirrors `WorkoutLog`.
 type WorkoutLog struct {
-	ID              string    `gorm:"primaryKey" json:"id"`
-	UserID          string    `gorm:"index" json:"-"`
-	WorkoutDayID    string    `json:"workoutDayId"`
-	CompletedAt     time.Time `json:"completedAt"`
-	DurationMinutes int       `json:"durationMinutes"`
-	CaloriesBurned  float64   `json:"caloriesBurned"`
+	ID              string               `gorm:"primaryKey" json:"id"`
+	UserID          string               `gorm:"index" json:"-"`
+	WorkoutDayID    string               `json:"workoutDayId"`
+	CompletedAt     time.Time            `json:"completedAt"`
+	DurationMinutes int                  `json:"durationMinutes"`
+	CaloriesBurned  float64              `json:"caloriesBurned"`
+	Exercises       []WorkoutExerciseLog `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE" json:"exercises,omitempty"`
+}
+
+// WorkoutExerciseLog is one exercise within a logged session; serialized as
+// { exerciseId, sets }.
+type WorkoutExerciseLog struct {
+	ID           string          `gorm:"primaryKey" json:"-"`
+	WorkoutLogID string          `gorm:"index" json:"-"`
+	ExerciseID   string          `json:"exerciseId"`
+	Position     int             `json:"-"`
+	Sets         []WorkoutSetLog `gorm:"foreignKey:WorkoutExerciseLogID;constraint:OnDelete:CASCADE" json:"sets"`
+}
+
+// WorkoutSetLog is a single recorded set: reps and weight actually performed.
+type WorkoutSetLog struct {
+	ID                   string  `gorm:"primaryKey" json:"-"`
+	WorkoutExerciseLogID string  `gorm:"index" json:"-"`
+	SetNumber            int     `json:"setNumber"`
+	Reps                 int     `json:"reps"`
+	WeightKg             float64 `json:"weightKg"`
 }
 
 // MealEntry mirrors `MealEntry`.

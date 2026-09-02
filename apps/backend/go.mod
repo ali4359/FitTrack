@@ -3,6 +3,7 @@ module github.com/ali4359/fittrack/backend
 go 1.26
 
 require (
+	github.com/anthropics/anthropic-sdk-go v1.68.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/anthropics/anthropic-sdk-go v1.68.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.2 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect

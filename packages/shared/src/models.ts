@@ -54,6 +54,19 @@ export type WorkoutDay = {
   exercises: WorkoutDayExercise[];
 };
 
+/** One recorded set: what was actually lifted. */
+export type WorkoutSet = {
+  setNumber: number;
+  reps: number;
+  weightKg: number;
+};
+
+/** Per-exercise breakdown of a logged session. */
+export type WorkoutLoggedExercise = {
+  exerciseId: string;
+  sets: WorkoutSet[];
+};
+
 export type WorkoutLog = {
   id: string;
   workoutDayId: string;
@@ -61,6 +74,8 @@ export type WorkoutLog = {
   completedAt: string;
   durationMinutes: number;
   caloriesBurned: number;
+  /** per-exercise sets; omitted by list endpoints that don't preload them */
+  exercises?: WorkoutLoggedExercise[];
 };
 
 /** MealEntry is the seeded catalogue row, used only by the no-LLM fallback. */
