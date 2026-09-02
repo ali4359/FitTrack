@@ -68,6 +68,14 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 		return
 	}
 
+	if user.WeightKg <= 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": "set your body weight in your profile before logging a workout",
+			"code":  "weight_required",
+		})
+		return
+	}
+
 	var body completeWorkoutBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -108,11 +116,7 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 		})
 	}
 
-	weight := user.WeightKg
-	if weight <= 0 {
-		weight = 75
-	}
-	calories := estimateCalories(weight, body.DurationMinutes, mets)
+	calories := estimateCalories(user.WeightKg, body.DurationMinutes, mets)
 
 	logEntry := models.WorkoutLog{
 		ID:              logID,
