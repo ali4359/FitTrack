@@ -10,7 +10,7 @@ import type { HomeStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'WorkoutSession'>;
 
-type SetEntry = { reps: string; weightKg: string };
+type SetEntry = { reps: string; weightKg: string; doneAt: number | null };
 type ExerciseState = { sets: SetEntry[] };
 
 function fmtClock(totalSeconds: number) {
@@ -46,6 +46,7 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
           sets: Array.from({ length: Math.max(1, row.defaultSets) }, () => ({
             reps: String(row.defaultReps),
             weightKg: '',
+            doneAt: null,
           })),
         };
       }
@@ -76,10 +77,20 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
     setSets(id, (sets) => sets.map((s, i) => (i === index ? { ...s, ...p } : s)));
 
   const addSet = (id: string) =>
-    setSets(id, (sets) => [...sets, { reps: sets.at(-1)?.reps ?? '', weightKg: sets.at(-1)?.weightKg ?? '' }]);
+    setSets(id, (sets) => [
+      ...sets,
+      { reps: sets.at(-1)?.reps ?? '', weightKg: sets.at(-1)?.weightKg ?? '', doneAt: null },
+    ]);
 
   const removeSet = (id: string, index: number) =>
     setSets(id, (sets) => sets.filter((_, i) => i !== index));
+
+  // One tap marks the set done and timestamps it; tapping again clears it.
+  // The timestamps let the backend measure real rest between sets.
+  const toggleDone = (id: string, index: number) =>
+    setSets(id, (sets) =>
+      sets.map((s, i) => (i === index ? { ...s, doneAt: s.doneAt ? null : Date.now() } : s)),
+    );
 
   const finish = () => {
     if (!day.data) return;
@@ -87,7 +98,11 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
       exerciseId: row.exercise.id,
       sets: (state[row.exercise.id]?.sets ?? [])
         .filter(isLogged)
-        .map((s) => ({ reps: Number(s.reps) || 0, weightKg: Number(s.weightKg) || 0 })),
+        .map((s) => ({
+          reps: Number(s.reps) || 0,
+          weightKg: Number(s.weightKg) || 0,
+          completedAt: s.doneAt ? new Date(s.doneAt).toISOString() : undefined,
+        })),
     }));
     const durationMinutes = Math.max(1, Math.round(elapsed / 60));
 
@@ -186,6 +201,7 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
                 <AppText style={[styles.colSet, styles.colLabel]}>SET</AppText>
                 <AppText style={[styles.colNum, styles.colLabel]}>REPS</AppText>
                 <AppText style={[styles.colNum, styles.colLabel]}>WEIGHT (KG)</AppText>
+                <AppText style={[styles.colDone, styles.colLabel]}>DONE</AppText>
                 <View style={styles.colRemove} />
               </View>
 
@@ -210,6 +226,18 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
                     placeholderTextColor={colors.textSecondary}
                     style={[styles.numInput, styles.colNum]}
                   />
+                  <Pressable
+                    onPress={() => toggleDone(row.exercise.id, i)}
+                    hitSlop={8}
+                    style={[styles.colDone, styles.doneBox, !!set.doneAt && styles.doneBoxOn]}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: !!set.doneAt }}
+                    accessibilityLabel={`Mark set ${i + 1} done`}
+                  >
+                    <AppText style={{ fontFamily: fonts.monoBold, fontSize: fontSize.md, color: set.doneAt ? colors.onAccent : colors.textSecondary }}>
+                      {set.doneAt ? '✓' : '○'}
+                    </AppText>
+                  </Pressable>
                   <Pressable
                     onPress={() => removeSet(row.exercise.id, i)}
                     disabled={sets.length === 1}
@@ -240,7 +268,8 @@ export function WorkoutSessionScreen({ navigation, route }: Props) {
       })}
 
       <AppText variant="caption" center>
-        Calorie burn is estimated from these numbers — log what you actually did.
+        Tap ✓ as you finish each set — the timing sharpens the calorie estimate. Reps and
+        weight still count if you skip it.
       </AppText>
     </Screen>
   );
@@ -256,9 +285,23 @@ const styles = StyleSheet.create({
     color: colors.textDim,
     letterSpacing: 0.5,
   },
-  colSet: { width: 28, textAlign: 'center' },
+  colSet: { width: 24, textAlign: 'center' },
   colNum: { flex: 1 },
-  colRemove: { width: 28, alignItems: 'center', justifyContent: 'center' },
+  colDone: { width: 34, textAlign: 'center' },
+  colRemove: { width: 24, alignItems: 'center', justifyContent: 'center' },
+  doneBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 34,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.ink,
+  },
+  doneBoxOn: {
+    backgroundColor: colors.cardamom,
+    borderColor: colors.cardamom,
+  },
   setIndex: { fontFamily: fonts.monoBold, fontSize: fontSize.md, color: colors.textSecondary },
   addSet: { paddingVertical: spacing.sm, alignSelf: 'flex-start' },
   numInput: {

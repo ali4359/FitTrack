@@ -51,7 +51,7 @@ export function SessionCompleteScreen({ navigation, route }: Props) {
       </Card>
 
       <AppText variant="caption" center>
-        This is an estimate from a MET model, not an exact measurement.
+        Estimated from the work you logged and your set timing — expect roughly ±25%.
       </AppText>
     </Screen>
   );

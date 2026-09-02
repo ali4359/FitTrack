@@ -26,6 +26,12 @@ type Exercise struct {
 	Name        string  `json:"name"`
 	MuscleGroup string  `json:"muscleGroup"`
 	MetValue    float64 `json:"metValue"`
+	// RangeOfMotionM is the bar/handle travel per rep, in metres — the "distance"
+	// term of the mechanical-work calorie estimate.
+	RangeOfMotionM float64 `json:"rangeOfMotionM"`
+	// BodyweightLoadFactor is the fraction of the lifter's body mass that also
+	// moves through the ROM (≈0 for most isolation work, ~0.65 for a squat).
+	BodyweightLoadFactor float64 `json:"bodyweightLoadFactor"`
 }
 
 // WorkoutDay mirrors `WorkoutDay`.
@@ -59,22 +65,32 @@ type WorkoutLog struct {
 }
 
 // WorkoutExerciseLog is one exercise within a logged session; serialized as
-// { exerciseId, sets }.
+// { exerciseId, caloriesBurned, sets }.
 type WorkoutExerciseLog struct {
-	ID           string          `gorm:"primaryKey" json:"-"`
-	WorkoutLogID string          `gorm:"index" json:"-"`
-	ExerciseID   string          `json:"exerciseId"`
-	Position     int             `json:"-"`
-	Sets         []WorkoutSetLog `gorm:"foreignKey:WorkoutExerciseLogID;constraint:OnDelete:CASCADE" json:"sets"`
+	ID           string `gorm:"primaryKey" json:"-"`
+	WorkoutLogID string `gorm:"index" json:"-"`
+	ExerciseID   string `json:"exerciseId"`
+	Position     int    `json:"-"`
+	// CaloriesBurned is this exercise's share of the session estimate.
+	CaloriesBurned float64         `json:"caloriesBurned"`
+	Sets           []WorkoutSetLog `gorm:"foreignKey:WorkoutExerciseLogID;constraint:OnDelete:CASCADE" json:"sets"`
 }
 
-// WorkoutSetLog is a single recorded set: reps and weight actually performed.
+// WorkoutSetLog is a single recorded set: reps and weight actually performed,
+// plus the timing the app captured or the model estimated.
 type WorkoutSetLog struct {
 	ID                   string  `gorm:"primaryKey" json:"-"`
 	WorkoutExerciseLogID string  `gorm:"index" json:"-"`
 	SetNumber            int     `json:"setNumber"`
 	Reps                 int     `json:"reps"`
 	WeightKg             float64 `json:"weightKg"`
+	// CompletedAt is when the user tapped "set done"; nil for older logs or when
+	// the set was never marked done.
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+	// TUTSeconds / RestSeconds are the resolved timing the burn model used:
+	// time under tension, and rest taken after this set.
+	TUTSeconds  int `json:"tutSeconds"`
+	RestSeconds int `json:"restSeconds"`
 }
 
 // MealEntry mirrors `MealEntry`.

@@ -39,6 +39,10 @@ export type Exercise = {
   name: string;
   muscleGroup: string;
   metValue: number;
+  /** bar/handle travel per rep in metres — the "distance" term of the burn model */
+  rangeOfMotionM: number;
+  /** fraction of body mass moved through the ROM (≈0 for isolation, ~0.65 for a squat) */
+  bodyweightLoadFactor: number;
 };
 
 export type WorkoutDayExercise = {
@@ -54,16 +58,24 @@ export type WorkoutDay = {
   exercises: WorkoutDayExercise[];
 };
 
-/** One recorded set: what was actually lifted. */
+/** One recorded set: what was actually lifted, plus the timing used for the burn estimate. */
 export type WorkoutSet = {
   setNumber: number;
   reps: number;
   weightKg: number;
+  /** ISO 8601 — when "set done" was tapped; omitted for older logs */
+  completedAt?: string;
+  /** seconds; time under tension the burn model used */
+  tutSeconds: number;
+  /** seconds; rest taken after this set (measured from timestamps, else estimated) */
+  restSeconds: number;
 };
 
 /** Per-exercise breakdown of a logged session. */
 export type WorkoutLoggedExercise = {
   exerciseId: string;
+  /** this exercise's share of caloriesBurned */
+  caloriesBurned: number;
   sets: WorkoutSet[];
 };
 

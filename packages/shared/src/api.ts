@@ -51,6 +51,8 @@ export type UpdateProfileRequest = Partial<{
 export type WorkoutSetInput = {
   reps: number;
   weightKg: number;
+  /** ISO 8601 timestamp of the "set done" tap; omit if not captured */
+  completedAt?: string;
 };
 
 export type WorkoutExerciseResult = {

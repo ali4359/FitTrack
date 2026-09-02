@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/ali4359/fittrack/backend/internal/models"
+	"github.com/ali4359/fittrack/backend/internal/nutrition"
 )
 
 func (s *Server) loadWorkoutDay(id string) (*models.WorkoutDay, error) {
@@ -41,24 +42,11 @@ type completeWorkoutBody struct {
 	Exercises       []struct {
 		ExerciseID string `json:"exerciseId"`
 		Sets       []struct {
-			Reps     int     `json:"reps"`
-			WeightKg float64 `json:"weightKg"`
+			Reps        int        `json:"reps"`
+			WeightKg    float64    `json:"weightKg"`
+			CompletedAt *time.Time `json:"completedAt"` // when "set done" was tapped; optional
 		} `json:"sets"`
 	} `json:"exercises"`
-}
-
-// estimateCalories: MET formula — kcal = MET * 3.5 * kg / 200 * minutes,
-// averaged across the exercises actually performed.
-func estimateCalories(weightKg float64, minutes int, mets []float64) float64 {
-	if len(mets) == 0 || weightKg <= 0 {
-		return 0
-	}
-	var sum float64
-	for _, m := range mets {
-		sum += m
-	}
-	avgMet := sum / float64(len(mets))
-	return avgMet * 3.5 * weightKg / 200 * float64(minutes)
 }
 
 func (s *Server) handleCompleteWorkout(c *gin.Context) {
@@ -84,19 +72,26 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 
 	logID := uuid.NewString()
 
-	mets := []float64{}
 	exerciseLogs := []models.WorkoutExerciseLog{}
+	burnInputs := []nutrition.BurnExerciseInput{}
 	for i, e := range body.Exercises {
 		sets := []models.WorkoutSetLog{}
+		burnSets := []nutrition.BurnSetInput{}
 		for _, st := range e.Sets {
 			if st.Reps <= 0 {
 				continue
 			}
 			sets = append(sets, models.WorkoutSetLog{
-				ID:        uuid.NewString(),
-				SetNumber: len(sets) + 1,
-				Reps:      st.Reps,
-				WeightKg:  st.WeightKg,
+				ID:          uuid.NewString(),
+				SetNumber:   len(sets) + 1,
+				Reps:        st.Reps,
+				WeightKg:    st.WeightKg,
+				CompletedAt: st.CompletedAt,
+			})
+			burnSets = append(burnSets, nutrition.BurnSetInput{
+				Reps:        st.Reps,
+				WeightKg:    st.WeightKg,
+				CompletedAt: st.CompletedAt,
 			})
 		}
 		if len(sets) == 0 {
@@ -104,9 +99,7 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 		}
 
 		var ex models.Exercise
-		if s.db.First(&ex, "id = ?", e.ExerciseID).Error == nil {
-			mets = append(mets, ex.MetValue)
-		}
+		s.db.First(&ex, "id = ?", e.ExerciseID)
 		exerciseLogs = append(exerciseLogs, models.WorkoutExerciseLog{
 			ID:           uuid.NewString(),
 			WorkoutLogID: logID,
@@ -114,9 +107,21 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 			Position:     i,
 			Sets:         sets,
 		})
+		burnInputs = append(burnInputs, nutrition.BurnExerciseInput{
+			ROMMeters:            ex.RangeOfMotionM,
+			BodyweightLoadFactor: ex.BodyweightLoadFactor,
+			Sets:                 burnSets,
+		})
 	}
 
-	calories := estimateCalories(user.WeightKg, body.DurationMinutes, mets)
+	burn := nutrition.WorkoutBurn(user.WeightKg, body.DurationMinutes, burnInputs)
+	for i := range exerciseLogs {
+		exerciseLogs[i].CaloriesBurned = burn.Exercises[i].Kcal
+		for j := range exerciseLogs[i].Sets {
+			exerciseLogs[i].Sets[j].TUTSeconds = burn.Exercises[i].Sets[j].TUTSeconds
+			exerciseLogs[i].Sets[j].RestSeconds = burn.Exercises[i].Sets[j].RestSeconds
+		}
+	}
 
 	logEntry := models.WorkoutLog{
 		ID:              logID,
@@ -124,7 +129,7 @@ func (s *Server) handleCompleteWorkout(c *gin.Context) {
 		WorkoutDayID:    body.WorkoutDayID,
 		CompletedAt:     time.Now(),
 		DurationMinutes: body.DurationMinutes,
-		CaloriesBurned:  calories,
+		CaloriesBurned:  burn.TotalKcal,
 		Exercises:       exerciseLogs,
 	}
 	if err := s.db.Create(&logEntry).Error; err != nil {

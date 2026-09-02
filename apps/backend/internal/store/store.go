@@ -56,10 +56,36 @@ func Open() *gorm.DB {
 	return db
 }
 
+// exercisePhysics holds the per-exercise terms the calorie model needs:
+// {rangeOfMotionM, bodyweightLoadFactor}. Kept next to the seed so new
+// exercises get values at the same time.
+var exercisePhysics = map[string][2]float64{
+	"ex-bench":       {0.40, 0},
+	"ex-incline-db":  {0.40, 0},
+	"ex-cable-fly":   {0.55, 0},
+	"ex-tricep-push": {0.28, 0},
+	"ex-pullup":      {0.55, 0.90},
+	"ex-row":         {0.45, 0},
+	"ex-squat":       {0.50, 0.65},
+	"ex-rdl":         {0.40, 0.35},
+}
+
+// backfillExercisePhysics fills range-of-motion / bodyweight-load values on
+// exercises that predate those columns. Idempotent — only touches rows still
+// at the zero default.
+func backfillExercisePhysics(db *gorm.DB) {
+	for id, p := range exercisePhysics {
+		db.Model(&models.Exercise{}).
+			Where("id = ? AND range_of_motion_m = 0", id).
+			Updates(map[string]any{"range_of_motion_m": p[0], "bodyweight_load_factor": p[1]})
+	}
+}
+
 func seed(db *gorm.DB) {
 	var n int64
 	db.Model(&models.Exercise{}).Count(&n)
 	if n > 0 {
+		backfillExercisePhysics(db)
 		return
 	}
 	log.Println("store: seeding demo data")
@@ -73,6 +99,12 @@ func seed(db *gorm.DB) {
 		{ID: "ex-row", Name: "Barbell Row", MuscleGroup: "back", MetValue: 6.0},
 		{ID: "ex-squat", Name: "Back Squat", MuscleGroup: "legs", MetValue: 6.0},
 		{ID: "ex-rdl", Name: "Romanian Deadlift", MuscleGroup: "legs", MetValue: 6.0},
+	}
+	for i := range exercises {
+		if p, ok := exercisePhysics[exercises[i].ID]; ok {
+			exercises[i].RangeOfMotionM = p[0]
+			exercises[i].BodyweightLoadFactor = p[1]
+		}
 	}
 	db.Create(&exercises)
 
