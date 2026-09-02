@@ -49,6 +49,10 @@ diversity) before it is returned, and results are cached per profile bucket.
 | POST | `/api/meals/log` | ✓ | `{ mealType, servings?, mealEntryId? }` or an inline `{ dishName, calories, proteinG, carbsG, fatG }` |
 | GET | `/api/progress/summary` | ✓ | `{ workoutsThisMonth, avgCaloriesBurned }` |
 
-Calorie burn is a MET-based estimate: `kcal = avgMET * 3.5 * weightKg / 200 * minutes`.
-
 Seeded workout days: `day-1` (Chest & Triceps), `day-2` (Back & Biceps), `day-3` (Legs).
+
+## Design docs
+
+- [`docs/workout-calorie-model.md`](docs/workout-calorie-model.md) — how calories
+  burned per session and per exercise are estimated (mechanical work + baseline
+  metabolism + EPOC), why set timestamps are captured, and the tunable constants.
