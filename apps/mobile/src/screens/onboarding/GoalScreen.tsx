@@ -25,7 +25,7 @@ export function GoalScreen({ navigation }: Props) {
           label="Continue"
           fullWidth
           disabled={!goal}
-          onPress={() => navigation.navigate('BudgetRegion')}
+          onPress={() => navigation.navigate('BodyStats')}
         />
       }
     >

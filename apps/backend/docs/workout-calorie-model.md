@@ -216,9 +216,11 @@ struct passed into `WorkoutBurn`; the function is already pure.
 Every bucket scales with the lifter's mass, and there is no sensible default that
 isn't wrong by 20+ kg for a lot of people. `handleCompleteWorkout` returns
 **HTTP 422** with `{ "error": ..., "code": "weight_required" }` when
-`user.WeightKg <= 0`. The mobile app routes the user to set it on the profile
-screen. `WorkoutBurn` also returns a zeroed result for non-positive body weight
-as a defensive fallback.
+`user.WeightKg <= 0`. Onboarding collects it (the "Body weight" step, between
+Goal and Budget & region) and it is editable afterwards on the profile screen;
+`needsOnboarding` treats a missing weight as incomplete onboarding. `WorkoutBurn`
+also returns a zeroed result for non-positive body weight as a defensive
+fallback.
 
 ---
 

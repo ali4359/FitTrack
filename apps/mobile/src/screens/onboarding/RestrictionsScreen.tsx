@@ -12,7 +12,7 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Restrictions'>;
 const OPTIONS = ['halal', 'vegetarian', 'no beef', 'lactose-free', 'no eggs'];
 
 export function RestrictionsScreen(_: Props) {
-  const { goal, budgetTier, region, restrictions } = useOnboardingStore();
+  const { goal, weightKg, budgetTier, region, restrictions } = useOnboardingStore();
   const set = useOnboardingStore((s) => s.set);
   const reset = useOnboardingStore((s) => s.reset);
   const updateProfile = useUpdateProfile();
@@ -26,10 +26,11 @@ export function RestrictionsScreen(_: Props) {
   };
 
   const finish = () => {
-    if (!goal || !budgetTier) return;
+    if (!goal || !budgetTier || !weightKg) return;
     updateProfile.mutate(
       {
         goal,
+        weightKg,
         budgetTier,
         region: region.trim(),
         restrictions: restrictions.join(','),

@@ -3,6 +3,7 @@ import type { BudgetTier, Goal } from '@fittrack/shared';
 
 type OnboardingDraft = {
   goal: Goal | null;
+  weightKg: number | null;
   budgetTier: BudgetTier | null;
   region: string;
   restrictions: string[];
@@ -10,11 +11,18 @@ type OnboardingDraft = {
   reset: () => void;
 };
 
-export const useOnboardingStore = create<OnboardingDraft>((set) => ({
+type OnboardingFields = Omit<OnboardingDraft, 'set' | 'reset'>;
+
+const emptyDraft = (): OnboardingFields => ({
   goal: null,
+  weightKg: null,
   budgetTier: null,
   region: '',
   restrictions: [],
+});
+
+export const useOnboardingStore = create<OnboardingDraft>((set) => ({
+  ...emptyDraft(),
   set: (patch) => set(patch),
-  reset: () => set({ goal: null, budgetTier: null, region: '', restrictions: [] }),
+  reset: () => set(emptyDraft()),
 }));

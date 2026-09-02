@@ -21,7 +21,7 @@ type AuthState = {
 /** Whether onboarding still needs to run for the signed-in user. */
 export function needsOnboarding(user: User | null): boolean {
   if (!user) return false;
-  return !user.goal || !user.region || !user.budgetTier;
+  return !user.goal || !user.region || !user.budgetTier || !user.weightKg;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

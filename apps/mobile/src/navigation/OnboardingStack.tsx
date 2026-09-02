@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, fonts } from '../theme';
 import { GoalScreen } from '../screens/onboarding/GoalScreen';
+import { BodyStatsScreen } from '../screens/onboarding/BodyStatsScreen';
 import { BudgetRegionScreen } from '../screens/onboarding/BudgetRegionScreen';
 import { RestrictionsScreen } from '../screens/onboarding/RestrictionsScreen';
 import type { OnboardingStackParamList } from './types';
@@ -19,6 +20,11 @@ export function OnboardingStack() {
       }}
     >
       <Stack.Screen name="Goal" component={GoalScreen} options={{ title: 'Your goal' }} />
+      <Stack.Screen
+        name="BodyStats"
+        component={BodyStatsScreen}
+        options={{ title: 'Body weight' }}
+      />
       <Stack.Screen
         name="BudgetRegion"
         component={BudgetRegionScreen}
