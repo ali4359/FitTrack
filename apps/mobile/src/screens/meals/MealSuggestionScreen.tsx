@@ -12,7 +12,8 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'MealSuggestion'>;
 export function MealSuggestionScreen({ route }: Props) {
   const { mealType } = route.params;
   const meals = useMealSuggestions(mealType);
-  const top = meals.data?.[0];
+  const data = meals.data;
+  const results = data?.results ?? [];
 
   return (
     <Screen scroll refreshing={meals.isRefetching} onRefresh={() => meals.refetch()}>
@@ -24,28 +25,37 @@ export function MealSuggestionScreen({ route }: Props) {
         </AppText>
       ) : null}
 
-      {top ? (
-        <Card padded style={{ gap: spacing.md }}>
-          <View style={{ height: 140, borderRadius: 12, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' }}>
-            <AppText variant="label">IMAGE</AppText>
-          </View>
-          <AppText variant="title">{top.dishName}</AppText>
-          <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-            <Tag label={top.region} tone="turmeric" />
-            <Tag label={`${top.budgetTier} budget`} tone="neutral" />
-            {top.halal ? <Tag label="halal" tone="cardamom" /> : null}
-          </View>
-          <View style={{ flexDirection: 'row', gap: spacing.lg }}>
-            <AppText variant="mono">{Math.round(top.calories)} kcal</AppText>
-            <AppText variant="mono" color={colors.textDim}>
-              P{Math.round(top.proteinG)} · C{Math.round(top.carbsG)} · F{Math.round(top.fatG)}
-            </AppText>
-          </View>
-        </Card>
+      {data ? (
+        <AppText variant="caption" color={colors.textDim}>
+          This meal ≈ {Math.round(data.target.calories)} kcal · P{Math.round(data.target.proteinG)} ·
+          C{Math.round(data.target.carbsG)} · F{Math.round(data.target.fatG)}
+          {data.broadened ? '  (widened to fill 3)' : ''}
+        </AppText>
       ) : null}
 
-      <AppText variant="caption" center>
-        Swap &amp; log actions come with the full Meal Suggestion screen.
+      {results.map((dish) => (
+        <Card key={dish.name} padded style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
+            {dish.role ? <Tag label={dish.role} tone="turmeric" /> : null}
+            {dish.isHalal ? <Tag label="halal" tone="cardamom" /> : null}
+            {dish.isVegetarian ? <Tag label="veg" tone="neutral" /> : null}
+          </View>
+          <AppText variant="title">{dish.name}</AppText>
+          <AppText variant="caption" color={colors.textDim}>
+            {dish.portion}
+          </AppText>
+          <View style={{ flexDirection: 'row', gap: spacing.lg }}>
+            <AppText variant="mono">{Math.round(dish.calories)} kcal*</AppText>
+            <AppText variant="mono" color={colors.textDim}>
+              P{Math.round(dish.proteinG)} · C{Math.round(dish.carbsG)} · F{Math.round(dish.fatG)}
+            </AppText>
+          </View>
+          <AppText variant="caption">{dish.whyItFits}</AppText>
+        </Card>
+      ))}
+
+      <AppText variant="caption" center color={colors.textDim}>
+        * estimated macros. Swap &amp; log actions come with the full Meal Suggestion screen.
       </AppText>
     </Screen>
   );

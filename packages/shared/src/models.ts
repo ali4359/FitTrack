@@ -7,17 +7,31 @@
 export type Goal = 'bulk' | 'cut' | 'maintain';
 export type BudgetTier = 'low' | 'mid' | 'high';
 
+export type Sex = 'male' | 'female' | '';
+
 export type User = {
   id: string;
   email: string;
   name: string;
   goal: Goal;
+  /** used for the BMR calculation; '' when not yet asked */
+  sex: Sex;
+  /** years; 0 when not yet asked */
+  age: number;
   weightKg: number;
   heightCm: number;
   region: string;
   budgetTier: BudgetTier;
-  /** comma-separated, e.g. "halal,vegetarian" */
+  /** comma-separated, e.g. "halal,vegetarian,no beef" */
   restrictions: string;
+};
+
+/** A calorie + macronutrient vector (grams). */
+export type Macros = {
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
 };
 
 export type Exercise = {
@@ -49,6 +63,7 @@ export type WorkoutLog = {
   caloriesBurned: number;
 };
 
+/** MealEntry is the seeded catalogue row, used only by the no-LLM fallback. */
 export type MealEntry = {
   id: string;
   dishName: string;
@@ -62,4 +77,24 @@ export type MealEntry = {
   goalTags: string;
   halal: boolean;
   vegetarian: boolean;
+};
+
+/** MealSuggestion is one dish returned by GET /meals/suggest. */
+export type MealSuggestion = {
+  name: string;
+  /** realistic home portion, e.g. "1.5 plates (~420g)" */
+  portion: string;
+  ingredients: string[];
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  isVegetarian: boolean;
+  isVegan: boolean;
+  isHalal: boolean;
+  /** which slot this dish fills in the set of three */
+  role: 'best-fit' | 'higher-protein' | 'lighter' | '';
+  whyItFits: string;
+  /** macros are model estimates, not measured — show them as approximate */
+  estimated: boolean;
 };

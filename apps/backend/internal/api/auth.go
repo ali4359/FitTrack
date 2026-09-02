@@ -124,6 +124,8 @@ func (s *Server) handleLogin(c *gin.Context) {
 type updateProfileBody struct {
 	Name         *string  `json:"name"`
 	Goal         *string  `json:"goal"`
+	Sex          *string  `json:"sex"`
+	Age          *int     `json:"age"`
 	WeightKg     *float64 `json:"weightKg"`
 	HeightCm     *float64 `json:"heightCm"`
 	Region       *string  `json:"region"`
@@ -159,6 +161,12 @@ func (s *Server) handleUpdateProfile(c *gin.Context) {
 	}
 	if body.Goal != nil {
 		updates["goal"] = *body.Goal
+	}
+	if body.Sex != nil {
+		updates["sex"] = *body.Sex
+	}
+	if body.Age != nil {
+		updates["age"] = *body.Age
 	}
 	if body.WeightKg != nil {
 		updates["weight_kg"] = *body.WeightKg

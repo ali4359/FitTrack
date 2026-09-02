@@ -8,7 +8,9 @@ type User struct {
 	Email        string    `gorm:"uniqueIndex" json:"email"`
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"-"`
-	Goal         string    `json:"goal"`       // bulk | cut | maintain
+	Goal         string    `json:"goal"` // bulk | cut | maintain
+	Sex          string    `json:"sex"`  // male | female | "" (unknown)
+	Age          int       `json:"age"`  // years; 0 = unknown
 	WeightKg     float64   `json:"weightKg"`
 	HeightCm     float64   `json:"heightCm"`
 	Region       string    `json:"region"`
@@ -70,11 +72,20 @@ type MealEntry struct {
 	Vegetarian bool    `json:"vegetarian"`
 }
 
-// MealLog records that a user ate a suggested meal.
+// MealLog records that a user ate a meal. Macros are snapshotted onto the row so
+// LLM-generated suggestions (which never become MealEntry rows) can still be
+// logged and summed for "eaten today". MealEntryID stays for seeded-catalogue
+// logs; it is empty for LLM suggestions.
 type MealLog struct {
 	ID          string    `gorm:"primaryKey" json:"id"`
 	UserID      string    `gorm:"index" json:"-"`
 	MealEntryID string    `json:"mealEntryId"`
+	DishName    string    `json:"dishName"`
 	MealType    string    `json:"mealType"`
+	Servings    float64   `json:"servings"` // portion multiplier; defaults to 1
+	Calories    float64   `json:"calories"` // per the logged servings, already multiplied
+	ProteinG    float64   `json:"proteinG"`
+	CarbsG      float64   `json:"carbsG"`
+	FatG        float64   `json:"fatG"`
 	EatenAt     time.Time `json:"eatenAt"`
 }

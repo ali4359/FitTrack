@@ -55,9 +55,11 @@ export async function getWorkoutHistory() {
 }
 
 // ---- Meals ----
-export async function suggestMeals(type: MealSuggestionType) {
-  const { data } = await api.get<MealSuggestResponse>('/meals/suggest', { params: { type } });
-  return data.results;
+export async function suggestMeals(type: MealSuggestionType, exclude?: string[]) {
+  const { data } = await api.get<MealSuggestResponse>('/meals/suggest', {
+    params: { type, exclude: exclude?.join(',') || undefined },
+  });
+  return data;
 }
 
 export async function logMeal(body: LogMealRequest) {

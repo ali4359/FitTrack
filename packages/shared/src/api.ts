@@ -5,7 +5,9 @@
 import type {
   BudgetTier,
   Goal,
-  MealEntry,
+  Macros,
+  MealSuggestion,
+  Sex,
   User,
   WorkoutDay,
   WorkoutLog,
@@ -34,6 +36,8 @@ export type AuthResponse = {
 export type UpdateProfileRequest = Partial<{
   name: string;
   goal: Goal;
+  sex: Sex;
+  age: number;
   weightKg: number;
   heightCm: number;
   region: string;
@@ -83,12 +87,29 @@ export type MealSuggestionType =
   | 'daily';
 
 export type MealSuggestResponse = {
-  results: MealEntry[];
+  /** macro target for this one meal */
+  target: Macros;
+  /** the full-day target, for context on the card */
+  dailyTarget: Macros;
+  results: MealSuggestion[];
+  /** "llm" | "llm-cache" | "fallback" */
+  source: string;
+  /** true when constraints had to be relaxed to return three dishes */
+  broadened: boolean;
 };
 
 export type LogMealRequest = {
-  mealEntryId: string;
   mealType: MealSuggestionType;
+  /** portion multiplier the user picked; defaults to 1 */
+  servings?: number;
+  /** reference a seeded catalogue entry... */
+  mealEntryId?: string;
+  /** ...or pass an LLM suggestion inline (per-serving macros) */
+  dishName?: string;
+  calories?: number;
+  proteinG?: number;
+  carbsG?: number;
+  fatG?: number;
 };
 
 export type LogMealResponse = {

@@ -1,17 +1,21 @@
 package api
 
 import (
+	"log"
 	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/ali4359/fittrack/backend/internal/meals"
 )
 
 type Server struct {
 	db        *gorm.DB
 	jwtSecret []byte
+	meals     *meals.Service
 }
 
 func New(db *gorm.DB) *Server {
@@ -19,7 +23,15 @@ func New(db *gorm.DB) *Server {
 	if secret == "" {
 		secret = "dev-only-insecure-secret-change-me"
 	}
-	return &Server{db: db, jwtSecret: []byte(secret)}
+
+	mealSvc := meals.NewService(meals.NewAnthropicSuggester())
+	if mealSvc.Enabled() {
+		log.Println("meals: LLM suggestions enabled")
+	} else {
+		log.Println("meals: ANTHROPIC_API_KEY unset — using seeded catalogue fallback")
+	}
+
+	return &Server{db: db, jwtSecret: []byte(secret), meals: mealSvc}
 }
 
 func (s *Server) Router() *gin.Engine {
